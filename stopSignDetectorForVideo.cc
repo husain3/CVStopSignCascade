@@ -14,7 +14,7 @@ void detectAndDisplay(Mat frame);
 
 /* Global Variables */
 String stop_sign_cascade_name = "cascade.xml"; //Will need to modify this for path or put this code in the same direct
-String test_video = "stopsignvid2.mp4";
+String test_video = "cropstopsignvid2.mp4";
 CascadeClassifier stop_sign_cascade;
 String window_name = "Capture - Stop Sign Detection";
 
@@ -22,6 +22,9 @@ int main(int argc, const char ** argv)
 {
 	Mat stop_sign_img;
 	Mat empty_mat;
+
+	std::vector<Rect> stopSigns;
+	Mat frame_gray;
 
 	CvCapture* capture;
 	Mat frame;
@@ -51,7 +54,17 @@ int main(int argc, const char ** argv)
 		//imshow("manhan", frame);
 		if(!frame.empty())
 		{
-			detectAndDisplay(frame);
+			//detectAndDisplay(frame);
+			cvtColor(frame, frame_gray, CV_BGR2GRAY);
+			equalizeHist(frame_gray, frame_gray);
+			stop_sign_cascade.detectMultiScale(frame_gray, stopSigns, 1.1, 4, 0|CV_HAAR_SCALE_IMAGE, Size(50, 50));
+			for(std::vector<Rect>::size_type i = 0; i != stopSigns.size(); i++)
+			{
+				cv::Rect rect(stopSigns[i].x, stopSigns[i].y, stopSigns[i].width, stopSigns[i].height);
+				cv::rectangle(frame, rect, cv::Scalar(0, 255, 0), 12);
+			}
+			imshow("stopsigndetect", frame);
+			waitKey(1);
 		}
 		else
 		{
@@ -95,7 +108,7 @@ void detectAndDisplay(Mat frame)
 }
 
 
-//TO BUILD: g++ `pkg-config --cflags --libs opencv` stopSignDetector.cc
+//TO BUILD: g++ `pkg-config --cflags --libs opencv` stopSignDetectorForVideo.cc
 //TO MOVE TO CLASSIFIER FOLDER: mv a.out classifier/
 ///Volumes/Macintosh SD/arshadhusain/Desktop/Computer Vision and Autonomous Car Work/All Computer Vision Projects/traffic_signs/stop_sign_detection/opencv_cctraining_real/classifier
 
